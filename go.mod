@@ -1,4 +1,4 @@
-module github.com/craftzbay/go_grc
+module github.com/craftzbay/go_grc/v2
 
 go 1.19
 
