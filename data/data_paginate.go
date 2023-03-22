@@ -1,15 +1,15 @@
 package data
 
 type Pagination struct {
-	PageSize   uint        `json:"-"`
-	PageNumber uint        `json:"-"`
-	Offset     uint        `json:"-"`
+	PageSize   int         `json:"-"`
+	PageNumber int         `json:"-"`
+	Offset     int         `json:"-"`
 	TotalPage  int64       `json:"total_page"`
 	TotalRow   int64       `json:"total_row"`
 	Items      interface{} `json:"items"`
 }
 
-func Paginate(pageSize, pageNumber uint, totalRows int64) *Pagination {
+func Paginate(pageSize, pageNumber int, totalRows int64) *Pagination {
 	offset := pageSize * (pageNumber - 1)
 	pagination := &Pagination{
 		PageSize:   pageSize,
