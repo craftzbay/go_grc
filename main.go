@@ -10,7 +10,7 @@ func Hello() {
 	fmt.Println("Hello from GRC")
 }
 
-func LoadConfig(configName, configType, path string, conf *any) error {
+func LoadConfig[T any](configName, configType, path string, responseType T) (T, error) {
 	viper.SetConfigName(configName)
 	viper.SetConfigType(configType)
 	viper.AddConfigPath(path)
@@ -18,11 +18,12 @@ func LoadConfig(configName, configType, path string, conf *any) error {
 	viper.AutomaticEnv()
 
 	if err := viper.ReadInConfig(); err != nil {
-		return err
+		return responseType, err
 	}
 
-	if err := viper.Unmarshal(&conf); err != nil {
-		return err
+	var res T
+	if err := viper.Unmarshal(&res); err != nil {
+		return responseType, err
 	}
-	return nil
+	return res, nil
 }
