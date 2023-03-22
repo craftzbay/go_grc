@@ -10,7 +10,7 @@ func Hello() {
 	fmt.Println("Hello from GRC")
 }
 
-func LoadConfig(configName, configType, path string, conf *interface{}) error {
+func LoadConfig(configName, configType, path string, conf *any) error {
 	viper.SetConfigName(configName)
 	viper.SetConfigType(configType)
 	viper.AddConfigPath(path)
