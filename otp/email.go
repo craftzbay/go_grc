@@ -12,7 +12,7 @@ type emailBody struct {
 	TemplateData map[string]interface{} `json:"template_data"`
 }
 
-func SendEmail(to, subject string, body map[string]interface{}) error {
+func SendEmail(uri, to, subject string, body map[string]interface{}) error {
 	email := emailBody{}
 	email.SenderId = 17
 	email.TemplateId = 9
@@ -24,6 +24,6 @@ func SendEmail(to, subject string, body map[string]interface{}) error {
 	// 	return err
 	// }
 	var response map[string]interface{}
-	go client.MakeHTTPRequest("http://10.0.0.107:3033/email/send", "POST", nil, nil, email, response)
+	go client.MakeHTTPRequest(uri, "POST", nil, nil, email, response)
 	return nil
 }
