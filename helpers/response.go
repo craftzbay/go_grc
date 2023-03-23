@@ -5,7 +5,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func Response(statusCode uint, c *fiber.Ctx, responseDetails ...interface{}) error {
+func Response(c *fiber.Ctx, responseDetails ...interface{}) error {
 
 	if len(responseDetails) == 0 {
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{})
