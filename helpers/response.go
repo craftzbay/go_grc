@@ -5,8 +5,13 @@ import (
 	"go.uber.org/zap"
 )
 
-func Response(statusCode uint, c *fiber.Ctx, res interface{}) error {
-	return c.Status(fiber.StatusOK).JSON(res)
+func Response(statusCode uint, c *fiber.Ctx, responseDetails ...interface{}) error {
+
+	if len(responseDetails) == 0 {
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(responseDetails[0])
 }
 
 func ResponseForbidden(c *fiber.Ctx, message string) error {
