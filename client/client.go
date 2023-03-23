@@ -43,6 +43,7 @@ func MakeHTTPRequest[T any](fullUrl string, httpMethod string, headers map[strin
 	}
 
 	// for each header passed, add the header value to the request
+	req.Header.Add("Content-Type", "application/json")
 	for k, v := range headers {
 		req.Header.Set(k, v)
 	}
