@@ -1,5 +1,10 @@
 package data
 
+import (
+	"github.com/craftzbay/go_grc/v2/converter"
+	"github.com/gofiber/fiber/v2"
+)
+
 type Pagination struct {
 	PageSize   int         `json:"-"`
 	PageNumber int         `json:"-"`
@@ -9,7 +14,10 @@ type Pagination struct {
 	Items      interface{} `json:"items"`
 }
 
-func Paginate(pageSize, pageNumber int, totalRows int64) *Pagination {
+func Paginate(c *fiber.Ctx, totalRows int64) *Pagination {
+	pageSize := converter.StringToInt(c.Query("page_size", "50"))
+	pageNumber := converter.StringToInt(c.Query("page_number", "1"))
+
 	offset := pageSize * (pageNumber - 1)
 	pagination := &Pagination{
 		PageSize:   pageSize,
