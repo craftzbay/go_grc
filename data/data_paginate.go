@@ -6,9 +6,9 @@ import (
 )
 
 type Pagination[T any] struct {
-	PageSize   uint  `json:"-"`
-	PageNumber uint  `json:"-"`
 	Offset     uint  `json:"-"`
+	PageSize   uint  `json:"page_size"`
+	PageNumber uint  `json:"page_number"`
 	TotalPage  int64 `json:"total_page"`
 	TotalRow   int64 `json:"total_row"`
 	Items      []T   `json:"items"`
