@@ -21,7 +21,6 @@ func SendSms(uri, phone, text string) error {
 	// }
 	headers := make(map[string]string)
 	headers["message_code"] = "302402"
-	var response map[string]interface{}
-	go client.MakeHTTPRequest(uri, "POST", headers, nil, sms, response)
+	go client.MakeHTTPRequest[map[string]interface{}](uri, "POST", headers, nil, sms)
 	return nil
 }

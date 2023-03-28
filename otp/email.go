@@ -23,7 +23,6 @@ func SendEmail(uri, to, subject string, body map[string]interface{}) error {
 	// if err != nil {
 	// 	return err
 	// }
-	var response map[string]interface{}
-	go client.MakeHTTPRequest(uri, "POST", nil, nil, email, response)
+	go client.MakeHTTPRequest[map[string]interface{}](uri, "POST", nil, nil, email)
 	return nil
 }
