@@ -7,9 +7,7 @@ import (
 	"encoding/hex"
 	"math"
 	"math/rand"
-	"os"
 	"regexp"
-	"strconv"
 	"strings"
 	"time"
 
@@ -82,12 +80,11 @@ func StringInArr(a string, list []string) bool {
 	return false
 }
 
-func GenerateOtp() int {
-	k, _ := strconv.Atoi(os.Getenv("OTP_CODE_LENGTH"))
-	min := int(math.Pow10(k - 1))
-	max := int(math.Pow10(k) - 1)
+func GenerateOtp(len int) uint {
+	min := int(math.Pow10(len - 1))
+	max := int(math.Pow10(len) - 1)
 	rand.Seed(time.Now().UnixNano())
-	return rand.Intn(max-min) + min
+	return uint(rand.Intn(max-min) + min)
 }
 
 func GenerateHashDocument(firstName, lastName, birth_date, gender, countryCode, passportNumber string) string {
