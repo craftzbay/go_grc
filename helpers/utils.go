@@ -110,3 +110,7 @@ func UniqueIntSlice(intSlice []int) []int {
 	}
 	return list
 }
+
+func RoundFloat(v float64) float64 {
+	return math.Floor(v*100) / 100
+}
