@@ -14,7 +14,7 @@ import (
 
 type RequestError struct {
 	StatusCode   int
-	ResponseData interface{}
+	ResponseData map[string]interface{}
 	Err          error
 }
 
@@ -22,9 +22,10 @@ func (r *RequestError) Error() string {
 	return fmt.Sprintf("status %d: err %v", r.StatusCode, r.Err)
 }
 
-// in the case of GET, the parameter queryParameters is transferred to the URL as query parameters
-// in the case of POST, the parameter body, an io.Reader, is used
-func MakeHTTPRequest[T any](fullUrl string, httpMethod string, headers map[string]string, queryParameters url.Values, body interface{}) (*T, *RequestError) {
+// HTTP хүсэлт илгээгч
+//
+// default-р Content-Type нь application/json байгаа headers параметрээр өөрчилж болно
+func MakeHTTPRequest[T any](fullUrl string, httpMethod string, headers *map[string]string, queryParameters *url.Values, body interface{}) (*T, *RequestError) {
 	client := http.Client{}
 	u, err := url.Parse(fullUrl)
 	if err != nil {
@@ -34,10 +35,11 @@ func MakeHTTPRequest[T any](fullUrl string, httpMethod string, headers map[strin
 	// if it's a GET, we need to append the query parameters.
 	if httpMethod == "GET" {
 		q := u.Query()
-
-		for k, v := range queryParameters {
-			// this depends on the type of api, you may need to do it for each of v
-			q.Set(k, strings.Join(v, ","))
+		if queryParameters != nil {
+			for k, v := range *queryParameters {
+				// this depends on the type of api, you may need to do it for each of v
+				q.Set(k, strings.Join(v, ","))
+			}
 		}
 		// set the query to the encoded parameters
 		u.RawQuery = q.Encode()
@@ -55,10 +57,11 @@ func MakeHTTPRequest[T any](fullUrl string, httpMethod string, headers map[strin
 
 	// for each header passed, add the header value to the request
 	req.Header.Add("Content-Type", "application/json")
-	for k, v := range headers {
-		req.Header.Set(k, v)
+	if headers != nil {
+		for k, v := range *headers {
+			req.Header.Set(k, v)
+		}
 	}
-
 	// optional: log the request for easier stack tracing
 	log.Printf("%s %s\n", httpMethod, req.URL.String())
 
@@ -80,7 +83,9 @@ func MakeHTTPRequest[T any](fullUrl string, httpMethod string, headers map[strin
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return nil, &RequestError{StatusCode: res.StatusCode, ResponseData: responseData, Err: errors.New("http request failed")}
+		httpErr := &RequestError{StatusCode: res.StatusCode, Err: errors.New("http request failed")}
+		json.Unmarshal(responseData, &httpErr.ResponseData)
+		return nil, httpErr
 	}
 
 	responseObject := new(T)

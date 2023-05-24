@@ -80,6 +80,7 @@ func StringInArr(a string, list []string) bool {
 	return false
 }
 
+// Нэг удаагын нууц үг үүсгэнэ
 func GenerateOtp(len int) uint {
 	min := int(math.Pow10(len - 1))
 	max := int(math.Pow10(len) - 1)
@@ -87,12 +88,14 @@ func GenerateOtp(len int) uint {
 	return uint(rand.Intn(max-min) + min)
 }
 
+// Бичиг баримтын хаш-код үүсгэнэ
 func GenerateHashDocument(firstName, lastName, birth_date, gender, countryCode, passportNumber string) string {
 	value := strings.Trim(firstName+lastName+gender+birth_date+countryCode+passportNumber, " ")
 	hash := md5.Sum([]byte(strings.ToLower(value)))
 	return hex.EncodeToString(hash[:])
 }
 
+// Хэрэглэгчийн хаш-код үүсгэнэ
 func GenerateHashUser(firstName, lastName, gender, birthDate, countryCode string) string {
 	value := strings.Trim(firstName+lastName+gender+birthDate+countryCode, " ")
 	hash := md5.Sum([]byte(strings.ToLower(value)))
