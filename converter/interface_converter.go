@@ -5,6 +5,7 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"errors"
+	"fmt"
 )
 
 // InterfaceToBytes
@@ -39,6 +40,27 @@ func InterfaceToInt64(param interface{}, errorString string) (result int64, err 
 		}
 	}
 	return result, err
+}
+
+func InterfaceToUint(val interface{}) (uint, error) {
+	switch v := val.(type) {
+	case uint:
+		return v, nil
+	case string:
+		return StringToUint(v), nil
+	case float64:
+		if v < 0 {
+			return 0, fmt.Errorf("cannot convert negative float to uint")
+		}
+		return uint(v), nil
+	case int64:
+		if v < 0 {
+			return 0, fmt.Errorf("cannot convert negative int64 to uint")
+		}
+		return uint(v), nil
+	default:
+		return 0, fmt.Errorf("unsupported type: %T", val)
+	}
 }
 
 // InterfaceToString :
