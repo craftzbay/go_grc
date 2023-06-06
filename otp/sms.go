@@ -10,7 +10,7 @@ type smsBody struct {
 	SmsType      uint     `json:"sms_type"`
 }
 
-func SendSms(uri, phone, text string) error {
+func SendSms(url, phone, text string) error {
 	sms := smsBody{}
 	sms.PhoneNumbers = append(sms.PhoneNumbers, phone)
 	sms.MessageValue = text
@@ -21,6 +21,14 @@ func SendSms(uri, phone, text string) error {
 	// }
 	headers := make(map[string]string)
 	headers["message_code"] = "302402"
-	go client.MakeHTTPRequest[map[string]interface{}](uri, "POST", &headers, nil, sms)
+
+	config := &client.RequestConfig{
+		Url:     url,
+		Method:  "POST",
+		Headers: &headers,
+		Body:    sms,
+	}
+
+	go client.MakeHTTPRequest[map[string]interface{}](config)
 	return nil
 }

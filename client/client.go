@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 )
 
 type RequestError struct {
@@ -22,21 +23,56 @@ func (r *RequestError) Error() string {
 	return fmt.Sprintf("status %d: err %v", r.StatusCode, r.Err)
 }
 
+// HTTP хүсэлтийн тохиргоо
+//
+// Url: хүсэлтийн url заавал байх ёстой
+//
+// Method: хүсэлтийн төрөл явуулаагүй үед GET байна
+//
+// Headers: default-р Content-Type нь application/json байна
+//
+// Parameters: query parameters хүсэлтийн төрөл GET үед ашиглана
+//
+// Body: хүсэлтийн бие
+//
+// Timeout: хүсэлтийн timeout явуулаагүй үед 30сек байна
+type RequestConfig struct {
+	Url        string
+	Method     string
+	Headers    *map[string]string
+	Parameters *url.Values
+	Body       interface{}
+	Timeout    uint
+}
+
 // HTTP хүсэлт илгээгч
 //
-// default-р Content-Type нь application/json байгаа headers параметрээр өөрчилж болно
-func MakeHTTPRequest[T any](fullUrl string, httpMethod string, headers *map[string]string, queryParameters *url.Values, body interface{}) (*T, *RequestError) {
-	client := http.Client{}
-	u, err := url.Parse(fullUrl)
+// *RequestConfig: хүсэлтийн тохиргоо
+func MakeHTTPRequest[T any](config *RequestConfig) (*T, *RequestError) {
+
+	if config.Method == "" {
+		config.Method = "GET"
+	}
+
+	if config.Timeout == 0 {
+		config.Timeout = 30
+	}
+
+	client := http.Client{
+		Timeout: time.Duration(config.Timeout) * time.Second,
+	}
+	u, err := url.Parse(config.Url)
 	if err != nil {
 		return nil, &RequestError{Err: err}
 	}
 
+	config.Method = strings.ToUpper(config.Method)
+
 	// if it's a GET, we need to append the query parameters.
-	if httpMethod == "GET" {
+	if config.Method == "GET" {
 		q := u.Query()
-		if queryParameters != nil {
-			for k, v := range *queryParameters {
+		if config.Parameters != nil {
+			for k, v := range *config.Parameters {
 				// this depends on the type of api, you may need to do it for each of v
 				q.Set(k, strings.Join(v, ","))
 			}
@@ -46,24 +82,24 @@ func MakeHTTPRequest[T any](fullUrl string, httpMethod string, headers *map[stri
 	}
 
 	// regardless of GET or POST, we can safely add the body
-	jsonStrBytes, err := json.Marshal(body)
+	jsonStrBytes, err := json.Marshal(config.Body)
 	if err != nil {
 		return nil, &RequestError{Err: err}
 	}
-	req, err := http.NewRequest(httpMethod, u.String(), bytes.NewBuffer(jsonStrBytes))
+	req, err := http.NewRequest(config.Method, u.String(), bytes.NewBuffer(jsonStrBytes))
 	if err != nil {
 		return nil, &RequestError{Err: err}
 	}
 
 	// for each header passed, add the header value to the request
 	req.Header.Add("Content-Type", "application/json")
-	if headers != nil {
-		for k, v := range *headers {
+	if config.Headers != nil {
+		for k, v := range *config.Headers {
 			req.Header.Set(k, v)
 		}
 	}
 	// optional: log the request for easier stack tracing
-	log.Printf("%s %s\n", httpMethod, req.URL.String())
+	log.Printf("%s %s\n", config.Method, req.URL.String())
 
 	// finally, do the request
 	res, err := client.Do(req)
