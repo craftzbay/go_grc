@@ -68,40 +68,40 @@ func MakeHTTPRequest[T any](config *RequestConfig) (*T, *RequestError) {
 
 	config.Method = strings.ToUpper(config.Method)
 
-	// if it's a GET, we need to append the query parameters.
-	if config.Method == "GET" {
-		q := u.Query()
-		if config.Parameters != nil {
-			for k, v := range *config.Parameters {
-				// this depends on the type of api, you may need to do it for each of v
-				q.Set(k, strings.Join(v, ","))
-			}
+	q := u.Query()
+	if config.Parameters != nil {
+		for k, v := range *config.Parameters {
+			q.Set(k, strings.Join(v, ","))
 		}
-		// set the query to the encoded parameters
-		u.RawQuery = q.Encode()
+	}
+	u.RawQuery = q.Encode()
+
+	var req *http.Request
+	if config.Body != nil {
+		jsonStrBytes, err := json.Marshal(config.Body)
+		if err != nil {
+			return nil, &RequestError{Err: err}
+		}
+		req, err = http.NewRequest(config.Method, u.String(), bytes.NewBuffer(jsonStrBytes))
+		if err != nil {
+			return nil, &RequestError{Err: err}
+		}
+	} else {
+		req, err = http.NewRequest(config.Method, u.String(), nil)
+		if err != nil {
+			return nil, &RequestError{Err: err}
+		}
 	}
 
-	// regardless of GET or POST, we can safely add the body
-	jsonStrBytes, err := json.Marshal(config.Body)
-	if err != nil {
-		return nil, &RequestError{Err: err}
-	}
-	req, err := http.NewRequest(config.Method, u.String(), bytes.NewBuffer(jsonStrBytes))
-	if err != nil {
-		return nil, &RequestError{Err: err}
-	}
-
-	// for each header passed, add the header value to the request
 	req.Header.Add("Content-Type", "application/json")
 	if config.Headers != nil {
 		for k, v := range *config.Headers {
 			req.Header.Set(k, v)
 		}
 	}
-	// optional: log the request for easier stack tracing
+
 	log.Printf("%s %s\n", config.Method, req.URL.String())
 
-	// finally, do the request
 	res, err := client.Do(req)
 	if err != nil {
 		return nil, &RequestError{Err: err}
