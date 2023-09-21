@@ -2,6 +2,7 @@ package client
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -60,6 +61,9 @@ func MakeHTTPRequest[T any](config *RequestConfig) (*T, *RequestError) {
 
 	client := http.Client{
 		Timeout: time.Duration(config.Timeout) * time.Second,
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},
 	}
 	u, err := url.Parse(config.Url)
 	if err != nil {
