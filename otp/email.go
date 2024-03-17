@@ -14,7 +14,7 @@ type emailBody struct {
 
 func SendEmail(url, to, subject string, body map[string]interface{}) error {
 	email := emailBody{}
-	email.SenderId = 17
+	email.SenderId = 26
 	email.TemplateId = 9
 	email.To = append(email.To, to)
 	email.Subject = subject
